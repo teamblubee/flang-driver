@@ -1010,6 +1010,14 @@ public:
   CanQualType ShortAccumTy, AccumTy,
       LongAccumTy;  // ISO/IEC JTC1 SC22 WG14 N1169 Extension
   CanQualType UnsignedShortAccumTy, UnsignedAccumTy, UnsignedLongAccumTy;
+  CanQualType ShortFractTy, FractTy, LongFractTy;
+  CanQualType UnsignedShortFractTy, UnsignedFractTy, UnsignedLongFractTy;
+  CanQualType SatShortAccumTy, SatAccumTy, SatLongAccumTy;
+  CanQualType SatUnsignedShortAccumTy, SatUnsignedAccumTy,
+      SatUnsignedLongAccumTy;
+  CanQualType SatShortFractTy, SatFractTy, SatLongFractTy;
+  CanQualType SatUnsignedShortFractTy, SatUnsignedFractTy,
+      SatUnsignedLongFractTy;
   CanQualType HalfTy; // [OpenCL 6.1.1.1], ARM NEON
   CanQualType Float16Ty; // C11 extension ISO/IEC TS 18661-3
   CanQualType FloatComplexTy, DoubleComplexTy, LongDoubleComplexTy;
@@ -1939,6 +1947,9 @@ public:
     return getQualifiedType(type.getUnqualifiedType(), Qs);
   }
 
+  unsigned char getFixedPointScale(QualType Ty) const;
+  unsigned char getFixedPointIBits(QualType Ty) const;
+
   DeclarationNameInfo getNameForTemplate(TemplateName Name,
                                          SourceLocation NameLoc) const;
 
@@ -2271,7 +2282,19 @@ public:
   bool ObjCMethodsAreEqual(const ObjCMethodDecl *MethodDecl,
                            const ObjCMethodDecl *MethodImp);
 
-  bool UnwrapSimilarPointerTypes(QualType &T1, QualType &T2);
+  bool UnwrapSimilarTypes(QualType &T1, QualType &T2);
+
+  /// Determine if two types are similar, according to the C++ rules. That is,
+  /// determine if they are the same other than qualifiers on the initial
+  /// sequence of pointer / pointer-to-member / array (and in Clang, object
+  /// pointer) types and their element types.
+  ///
+  /// Clang offers a number of qualifiers in addition to the C++ qualifiers;
+  /// those qualifiers are also ignored in the 'similarity' check.
+  bool hasSimilarType(QualType T1, QualType T2);
+
+  /// Determine if two types are similar, ignoring only CVR qualifiers.
+  bool hasCvrSimilarType(QualType T1, QualType T2);
 
   /// Retrieves the "canonical" nested name specifier for a
   /// given nested name specifier.
@@ -2543,7 +2566,14 @@ public:
   // Per C99 6.2.5p6, for every signed integer type, there is a corresponding
   // unsigned integer type.  This method takes a signed type, and returns the
   // corresponding unsigned integer type.
+  // With the introduction of fixed point types in ISO N1169, this method also
+  // accepts fixed point types and returns the corresponding unsigned type for
+  // a given fixed point type.
   QualType getCorrespondingUnsignedType(QualType T) const;
+
+  // Per ISO N1169, this method accepts fixed point types and returns the
+  // corresponding saturated type for a given fixed point type.
+  QualType getCorrespondingSaturatedType(QualType Ty) const;
 
   //===--------------------------------------------------------------------===//
   //                    Integer Values
