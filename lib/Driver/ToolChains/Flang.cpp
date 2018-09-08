@@ -558,7 +558,49 @@ void FlangFrontend::ConstructJob(Compilation &C, const JobAction &JA,
   // Add system include arguments.
   getToolChain().AddFlangSystemIncludeArgs(Args, UpperCmdArgs);
 
-  UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("unix");
+  switch (getToolChain().getEffectiveTriple().getOS()) {
+          case llvm::Triple::FreeBSD: {/* TODO append proper FreeBSD Major version */
+                unsigned Major = 0;
+                unsigned Minor = 0;
+                unsigned Micro = 0;
+                getToolChain().getEffectiveTriple().getOSVersion(Major, Minor, Micro);
+                const std::string a = "__FreeBSD" + std::to_string(Major) + "." + std::to_string(Minor);
+                const std::string b = "__FreeBSD" + std::to_string(Major);
+                const std::string c = "__FreeBSD__" + std::to_string(Major);
+
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("unix");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__unix");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__unix__");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(a.c_str());
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(b.c_str());
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(c.c_str());
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__NO_MATH_INLINES");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LP64__");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LONG_MAX__=9223372036854775807L");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__SIZE_TYPE__=unsigned long int");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__PTRDIFF_TYPE__=long int");
+                  break;
+                                      }
+          case llvm::Triple::Linux: {
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("unix");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__unix");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__unix__");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("linux");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__linux");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__linux__");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__NO_MATH_INLINES");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LP64__");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LONG_MAX__=9223372036854775807L");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__SIZE_TYPE__=unsigned long int");
+                UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__PTRDIFF_TYPE__=long int");
+                  break;
+                                    }
+          default: { /* donno what platform */
+                  ;
+                   }
+  }
+
+  /* UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("unix");
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__unix");
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__unix__");
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("linux");
@@ -568,7 +610,8 @@ void FlangFrontend::ConstructJob(Compilation &C, const JobAction &JA,
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LP64__");
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LONG_MAX__=9223372036854775807L");
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__SIZE_TYPE__=unsigned long int");
-  UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__PTRDIFF_TYPE__=long int");
+  UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__PTRDIFF_TYPE__=long int"); */
+
   switch (getToolChain().getEffectiveTriple().getArch()) {
   case llvm::Triple::aarch64:
     UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__aarch64");
@@ -903,4 +946,3 @@ void FlangFrontend::ConstructJob(Compilation &C, const JobAction &JA,
 
   C.addCommand(llvm::make_unique<Command>(JA, *this, LowerExec, LowerCmdArgs, Inputs));
 }
-
