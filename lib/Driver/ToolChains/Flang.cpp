@@ -568,12 +568,8 @@ void FlangFrontend::ConstructJob(Compilation &C, const JobAction &JA,
               unsigned Minor = 0;
               unsigned Micro = 0;
               getToolChain().getEffectiveTriple().getOSVersion(Major, Minor, Micro);
-              const std::string a = "__FreeBSD" + std::to_string(Major) + "." + std::to_string(Minor);
-              const std::string b = "__FreeBSD" + std::to_string(Major);
-              const std::string c = "__FreeBSD__" + std::to_string(Major);
-              UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(a.c_str());
-              UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(b.c_str());
-              UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(c.c_str());
+              std::string c = "__FreeBSD__" + std::to_string(Major);
+              UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(&c[0]);
               break;
                                     }
         case llvm::Triple::Linux: {
@@ -584,7 +580,7 @@ void FlangFrontend::ConstructJob(Compilation &C, const JobAction &JA,
                                   }
           default: { ; }
   }
-
+	
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__NO_MATH_INLINES");
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LP64__");
   UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__LONG_MAX__=9223372036854775807L");
