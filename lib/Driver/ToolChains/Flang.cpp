@@ -564,12 +564,7 @@ void FlangFrontend::ConstructJob(Compilation &C, const JobAction &JA,
 
   switch (getToolChain().getEffectiveTriple().getOS()) {
         case llvm::Triple::FreeBSD: {
-              unsigned Major = 0;
-              unsigned Minor = 0;
-              unsigned Micro = 0;
-              getToolChain().getEffectiveTriple().getOSVersion(Major, Minor, Micro);
-              std::string c = "__FreeBSD__" + std::to_string(Major);
-              UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back(&c[0]);
+              UpperCmdArgs.push_back("-def"); UpperCmdArgs.push_back("__FreeBSD__");
               break;
                                     }
         case llvm::Triple::Linux: {
